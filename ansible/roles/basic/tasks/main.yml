@@ -1,0 +1,74 @@
+---
+- name: install applications on Centos
+  package:
+    state: present
+    name: "{{ item }}"
+  loop:
+    - git
+    - java-1.7.0-openjdk-devel
+    - java-11-openjdk
+
+- name: Create 'javauser'
+  user:
+    name: javauser
+    groups: wheel
+    append: yes
+
+- name: Creating ssh directory
+  file:
+    path: /home/javauser/.ssh
+    state: directory
+    owner: javauser
+    group: javauser
+    mode: '0700'
+
+- name: copy ssh key pub
+  copy:
+    src: key.pub
+    dest: /home/javauser/.ssh
+    owner: javauser
+    group: javauser
+    mode: 0644
+
+- name: copy ssh key private
+  copy:
+    src: key
+    dest: /home/javauser/.ssh
+    owner: javauser
+    group: javauser
+    mode: 0600
+
+- name: Evaluating the authentication agent & adding the key...
+  shell: eval "$(ssh-agent)" && ssh-add /home/javauser/.ssh/key
+  become_user: javauser
+
+- name: Creating Git directory
+  file:
+    path: /home/javauser/OOP
+    state: directory
+    owner: javauser
+    group: javauser
+    mode: '0700'
+
+- name: connect to Git repository
+  become_user: javauser
+  git:
+    repo: https://github.com/AnnaLalova/VAII.git
+    dest: /home/javauser/OOP
+    accept_hostkey: yes
+
+
+- name: 'Compile app.java'
+  shell: javac /home/javauser/OOP/*.java
+  become_user: javauser
+
+- name: Run java application
+  shell: java Main
+  register: out
+  become_user: javauser
+  args:
+    chdir: /home/javauser/OOP
+
+- debug: var=out.stdout_lines
+
+

@@ -1,0 +1,4 @@
+- hosts: machine
+  become: true
+  roles:
+    - basic
