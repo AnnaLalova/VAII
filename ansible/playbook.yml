@@ -2,3 +2,5 @@
   become: true
   roles:
     - basic
+    - create_user
+    - run_java
