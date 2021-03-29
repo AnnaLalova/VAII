@@ -1,0 +1,49 @@
+---
+- name: Create 'javauser'
+  user:
+    name: javauser
+    groups: wheel
+    append: yes
+
+- name: Creating ssh directory
+  file:
+    path: /home/javauser/.ssh
+    state: directory
+    owner: javauser
+    group: javauser
+    mode: '0700'
+
+- name: copy ssh key pub
+  copy:
+    src: key.pub
+    dest: /home/javauser/.ssh
+    owner: javauser
+    group: javauser
+    mode: 0644
+
+- name: copy ssh key private
+  copy:
+    src: key
+    dest: /home/javauser/.ssh
+    owner: javauser
+    group: javauser
+    mode: 0600
+
+- name: Evaluating the authentication agent & adding the key...
+  shell: eval "$(ssh-agent)" && ssh-add /home/javauser/.ssh/key
+  become_user: javauser
+
+- name: Creating Git directory
+  file:
+    path: /home/javauser/OOP
+    state: directory
+    owner: javauser
+    group: javauser
+    mode: '0700'
+
+- name: connect to Git repository
+  become_user: javauser
+  git:
+    repo: https://github.com/AnnaLalova/VAII.git
+    dest: /home/javauser/OOP
+    accept_hostkey: yes
