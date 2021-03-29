@@ -1,0 +1,15 @@
+---
+- name: 'Compile app.java'
+  shell: javac /home/javauser/OOP/*.java
+  become_user: javauser
+
+- name: Run java application
+  shell: java Main
+  register: out
+  become_user: javauser
+  args:
+    chdir: /home/javauser/OOP
+
+- debug: var=out.stdout_lines
+
+
